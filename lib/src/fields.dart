@@ -1,5 +1,5 @@
 import 'package:analyzer/dart/constant/value.dart';
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:dotenv/dotenv.dart';
@@ -20,7 +20,7 @@ abstract class Field<T> {
 
   /// Factory method to create a [Field] instance based on the type of the field.
   static Field<dynamic> of({
-    required FieldElement element,
+    required FieldElement2 element,
     required FieldRename rename,
     required String? nameOverride,
     DartObject? defaultValue,
@@ -49,16 +49,16 @@ abstract class Field<T> {
     }
 
     throw UnsupportedError(
-        'Unsupported type for ${element.enclosingElement3.name}.$jsonKey: $type');
+        'Unsupported type for ${element.enclosingElement2.name3}.$jsonKey: $type');
   }
 
   /// Returns the JSON key for the given [element] based on the [rename] strategy and [nameOverride].
   static String getElementJsonKey(
-    FieldElement element,
+    FieldElement2 element,
     FieldRename rename,
     String? nameOverride,
   ) {
-    final key = element.name;
+    final key = element.name3!;
     String jsonKey;
 
     switch (rename) {
@@ -82,7 +82,7 @@ abstract class Field<T> {
     return nameOverride ?? jsonKey;
   }
 
-  final FieldElement _element;
+  final FieldElement2 _element;
 
   /// The JSON key associated with the field.
   final String jsonKey;
@@ -95,12 +95,12 @@ abstract class Field<T> {
 
   /// Returns the prefix for the type, if any.
   String? get typePrefix {
-    final identifier = type.element?.library?.identifier;
-    if (identifier == null) return null;
+    final uri = type.element3?.library2?.uri;
+    if (uri == null) return null;
 
-    for (final e in _element.library.importedLibraries) {
-      if (e.library.identifier != identifier) continue;
-      return e.name;
+    for (final e in _element.library2.exportedLibraries2) {
+      if (e.library2.uri != uri) continue;
+      return e.library2.name3;
     }
     return null;
   }
@@ -133,7 +133,7 @@ abstract class Field<T> {
 
     return """
       @override
-      ${typeWithPrefix(withNullability: true)} get ${_element.name} => _get('$jsonKey');
+      ${typeWithPrefix(withNullability: true)} get ${_element.name3!} => _get('$jsonKey');
     """;
   }
 
@@ -260,7 +260,7 @@ class EnumField extends Field<String> {
 
     return """
       @override
-      ${typeWithPrefix(withNullability: true)} get ${_element.name} => _get(
+      ${typeWithPrefix(withNullability: true)} get ${_element.name3!} => _get(
         '$jsonKey',
         fromString: ${typeWithPrefix(withNullability: false)}.values.byName,
       );
@@ -291,7 +291,7 @@ class FieldInfo {
 }
 
 /// Returns the field annotation for the given [element].
-FieldInfo? getFieldAnnotation(Element element) {
+FieldInfo? getFieldAnnotation(Element2 element) {
   var obj = _fieldKeyChecker.firstAnnotationOfExact(element);
   if (obj == null) return null;
 

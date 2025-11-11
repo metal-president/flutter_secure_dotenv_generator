@@ -1,4 +1,4 @@
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:flutter_secure_dotenv_generator/src/environment_field.dart';
 import 'package:flutter_secure_dotenv_generator/src/fields.dart';
@@ -99,31 +99,31 @@ final _escapeRegExp = RegExp('[\$\'"\\x00-\\x07\\x0E-\\x1F$_escapeMapRegexp]');
 
 final _escapeMapRegexp = _escapeMap.keys.map(_getHexLiteral).join();
 
-/// Returns the [InterfaceElement] for the given [element].
+/// Returns the [InterfaceElement2] for the given [element].
 ///
 /// Throws an [AssertionError] if the [element] is not a class or enum.
-InterfaceElement getInterface(Element element) {
+InterfaceElement2 getInterface(Element2 element) {
   assert(
     element.kind == ElementKind.CLASS || element.kind == ElementKind.ENUM,
     'Only classes or enums are allowed to be annotated with @HiveType.',
   );
 
-  return element as InterfaceElement;
+  return element as InterfaceElement2;
 }
 
 /// Returns a set of all accessor names (getters and setters) for the given [interface].
-Set<String> getAllAccessorNames(InterfaceElement interface) {
+Set<String> getAllAccessorNames(InterfaceElement2 interface) {
   var accessorNames = <String>{};
 
-  var supertypes = interface.allSupertypes.map((it) => it.element);
+  var supertypes = interface.allSupertypes.map((it) => it.element3);
   for (var type in [interface, ...supertypes]) {
-    for (var accessor in type.accessors) {
-      if (accessor.isSetter) {
-        var name = accessor.name;
-        accessorNames.add(name.substring(0, name.length - 1));
-      } else {
-        accessorNames.add(accessor.name);
-      }
+    for (var accessor in type.getters2) {
+      var name = accessor.name3!;
+      accessorNames.add(name);
+    }
+    for (var accessor in type.setters2) {
+      var name = accessor.name3!;
+      accessorNames.add(name.substring(0, name.length - 1));
     }
   }
 
@@ -135,20 +135,20 @@ Set<String> getAllAccessorNames(InterfaceElement interface) {
 /// This method looks up all the getters and setters in the [interface] and
 /// retrieves their annotations to create a list of [EnvironmentField]s.
 List<EnvironmentField> getAccessors(
-    InterfaceElement interface, LibraryElement library) {
+    InterfaceElement2 interface, LibraryElement2 library) {
   var accessorNames = getAllAccessorNames(interface);
 
   var getters = <EnvironmentField>[];
   var setters = <EnvironmentField>[];
   for (var name in accessorNames) {
-    var getter = interface.augmented.lookUpGetter(name: name, library: library);
+    var getter = interface.lookUpGetter2(name: name, library: library);
     if (getter != null) {
       var getterAnn =
-          getFieldAnnotation(getter.variable2!) ?? getFieldAnnotation(getter);
+          getFieldAnnotation(getter.variable3!) ?? getFieldAnnotation(getter);
       if (getterAnn != null) {
-        var field = getter.variable2!;
+        var field = getter.variable3!;
         getters.add(EnvironmentField(
-          field.name,
+          field.name3!,
           getterAnn.name,
           field.type,
           getterAnn.defaultValue,
@@ -156,15 +156,14 @@ List<EnvironmentField> getAccessors(
       }
     }
 
-    var setter =
-        interface.augmented.lookUpSetter(name: '$name=', library: library);
+    var setter = interface.lookUpSetter2(name: '$name=', library: library);
     if (setter != null) {
       var setterAnn =
-          getFieldAnnotation(setter.variable2!) ?? getFieldAnnotation(setter);
+          getFieldAnnotation(setter.variable3!) ?? getFieldAnnotation(setter);
       if (setterAnn != null) {
-        var field = setter.variable2!;
+        var field = setter.variable3!;
         setters.add(EnvironmentField(
-          field.name,
+          field.name3!,
           setterAnn.name,
           field.type,
           setterAnn.defaultValue,

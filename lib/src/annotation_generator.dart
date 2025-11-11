@@ -2,13 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:build/build.dart';
 import 'package:collection/collection.dart';
 import 'package:dotenv/dotenv.dart';
-import 'package:logging/logging.dart';
 import 'package:flutter_secure_dotenv/flutter_secure_dotenv.dart';
 import 'package:flutter_secure_dotenv_generator/src/helpers.dart';
+import 'package:logging/logging.dart';
 import 'package:source_gen/source_gen.dart';
 
 import 'fields.dart';
@@ -27,16 +27,16 @@ class FlutterSecureDotEnvAnnotationGenerator
 
   @override
   FutureOr<String> generateForAnnotatedElement(
-    Element element,
+    Element2 element,
     ConstantReader annotation,
     BuildStep buildStep,
   ) async {
-    if (element is! ClassElement) {
+    if (element is! ClassElement2) {
       throw Exception('@DotEnvGen annotation only supports classes');
     }
 
-    final className = element.name;
-    final constructor = element.constructors.firstWhereOrNull((e) {
+    final className = element.name3!;
+    final constructor = element.constructors2.firstWhereOrNull((e) {
       return e.isPrivate && e.isConst;
     });
     if (constructor == null) {
@@ -60,21 +60,21 @@ class FlutterSecureDotEnvAnnotationGenerator
 
     // iterate through element fields, even inherited ones
     final classFields = [
-      ...element.allSupertypes.expand((e) => e.element.fields).where(
+      ...element.allSupertypes.expand((e) => e.element3.fields2).where(
           (element) =>
               !element.isStatic &&
               !element.isPrivate &&
               element.kind == ElementKind.FIELD &&
-              element.name != 'hashCode' &&
-              element.name != 'runtimeType'),
-      ...element.fields,
+              element.name3 != 'hashCode' &&
+              element.name3 != 'runtimeType'),
+      ...element.fields2,
     ];
 
     for (final field in classFields) {
-      final isAbstract = field.isAbstract || field.getter?.isAbstract == true;
+      final isAbstract = field.isAbstract || field.getter2?.isAbstract == true;
 
       final annotation =
-          fieldAnnotations.firstWhereOrNull((e) => e.name == field.name);
+          fieldAnnotations.firstWhereOrNull((e) => e.name == field.name3!);
       final parsingName = annotation?.nameOverride;
       final defaultValue = annotation?.defaultValue;
 
@@ -191,7 +191,7 @@ class FlutterSecureDotEnvAnnotationGenerator
 
       buffer.writeln("""
       class _\$$className extends $className {
-        const _\$$className(this._encryptionKey, this._iv) : super.${constructor.name}();
+        const _\$$className(this._encryptionKey, this._iv) : super.${constructor.name3!}();
 
         final String _encryptionKey;
         final String _iv;
@@ -279,7 +279,7 @@ class FlutterSecureDotEnvAnnotationGenerator
 """;
       buffer.writeln("""
       class _\$$className extends $className {
-        const _\$$className() : super.${constructor.name}();
+        const _\$$className() : super.${constructor.name3!}();
 
         $encryptedValues
         $values
