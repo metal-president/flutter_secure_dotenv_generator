@@ -1,12 +1,12 @@
 import 'package:analyzer/dart/constant/value.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:build/build.dart';
 import 'package:flutter_secure_dotenv_generator/src/annotation_generator.dart';
 import 'package:flutter_secure_dotenv_generator/src/environment_field.dart';
 import 'package:flutter_secure_dotenv_generator/src/helpers.dart';
-import 'package:test/test.dart';
-import 'package:analyzer/dart/element/element.dart';
-import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('FlutterSecureDotEnvAnnotationGenerator', () {
@@ -29,7 +29,10 @@ void main() {
 
       expect(
         () => generator.generateForAnnotatedElement(
-            element, annotation, buildStep),
+          element as Element,
+          annotation,
+          buildStep,
+        ),
         throwsException,
       );
     });
@@ -37,8 +40,12 @@ void main() {
 
   group('EnvironmentField', () {
     test('should create an instance of EnvironmentField', () {
-      final field = EnvironmentField('name', 'nameOverride',
-          DartTypeImpl('String'), DartObjectImpl('defaultValue'));
+      final field = EnvironmentField(
+        'name',
+        'nameOverride',
+        DartTypeImpl('String'),
+        DartObjectImpl('defaultValue'),
+      );
 
       expect(field.name, 'name');
       expect(field.nameOverride, 'nameOverride');
@@ -63,14 +70,11 @@ class BuildStepMock implements BuildStep {
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
-class FunctionElementImpl implements FunctionElement {
+class FunctionElementImpl implements TopLevelFunctionElement {
   @override
   final String name;
 
   FunctionElementImpl(this.name);
-
-  @override
-  List<ElementAnnotation> get metadata => [];
 
   @override
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -81,9 +85,6 @@ class ClassElementImpl implements ClassElement {
   final String name;
 
   ClassElementImpl(this.name);
-
-  @override
-  List<ElementAnnotation> get metadata => [];
 
   @override
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -117,9 +118,6 @@ class FieldElementImpl implements FieldElement {
   FieldElementImpl(this.name, this.type);
 
   @override
-  List<ElementAnnotation> get metadata => [];
-
-  @override
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
@@ -130,16 +128,19 @@ class InterfaceElementImpl implements InterfaceElement {
   InterfaceElementImpl(this.name);
 
   @override
-  List<ElementAnnotation> get metadata => [];
-
-  @override
   List<InterfaceType> get allSupertypes => [];
 
   @override
-  List<PropertyAccessorElement> get accessors => [
-        PropertyAccessorElementImpl('accessor1', false),
-        PropertyAccessorElementImpl('accessor2', false),
-      ];
+  List<GetterElement> get getters => [
+    GetterElementImpl('getter1'),
+    GetterElementImpl('getter2'),
+  ];
+
+  @override
+  List<SetterElement> get setters => [
+    SetterElementImpl('setter1'),
+    SetterElementImpl('setter2'),
+  ];
 
   @override
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -152,9 +153,6 @@ class LibraryElementImpl implements LibraryElement {
   LibraryElementImpl(this.name);
 
   @override
-  List<ElementAnnotation> get metadata => [];
-
-  @override
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
@@ -165,6 +163,26 @@ class PropertyAccessorElementImpl implements PropertyAccessorElement {
   final bool isSetter;
 
   PropertyAccessorElementImpl(this.name, this.isSetter);
+
+  @override
+  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class GetterElementImpl implements GetterElement {
+  @override
+  final String name;
+
+  GetterElementImpl(this.name);
+
+  @override
+  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class SetterElementImpl implements SetterElement {
+  @override
+  final String name;
+
+  SetterElementImpl(this.name);
 
   @override
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
