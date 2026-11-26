@@ -1,3 +1,7 @@
+## Unreleased
+
+- Support Flutter 3.50 (Dart 3.14): widened `analyzer` to `>=8.0.0 <15.0.0` and `build` to `>=3.0.0 <6.0.0`, so `analyzer` 14.x, `build` 5.x and `source_gen` 4.3.x resolve. The minimum Dart SDK stays at `^3.9.0`.
+
 ## 2.0.1
 
 - Bumped minimum Dart SDK from `^3.8.0` to `^3.9.0`.
