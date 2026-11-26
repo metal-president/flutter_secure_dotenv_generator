@@ -116,13 +116,17 @@ Set<String> getAllAccessorNames(InterfaceElement interface) {
   var accessorNames = <String>{};
 
   var supertypes = interface.allSupertypes.map((it) => it.element);
-  for (var interfaceElement in [interface, ...supertypes]) {
-    for (var accessor in interfaceElement.setters) {
-      var name = accessor.name ?? '';
-      accessorNames.add(name.substring(0, name.length - 1));
+  for (var type in [interface, ...supertypes]) {
+    for (var getter in type.getters) {
+      accessorNames.add(getter.name!);
     }
-    for (var accessor in interfaceElement.getters) {
-      accessorNames.add(accessor.name ?? '');
+    for (var setter in type.setters) {
+      var name = setter.name!;
+      // Setter names end with '=', strip it
+      if (name.endsWith('=')) {
+        name = name.substring(0, name.length - 1);
+      }
+      accessorNames.add(name);
     }
   }
 
@@ -150,7 +154,7 @@ List<EnvironmentField> getAccessors(
         var field = getter.variable;
         getters.add(
           EnvironmentField(
-            field.name ?? '',
+            field.name!,
             getterAnn.name,
             field.type,
             getterAnn.defaultValue,
@@ -167,7 +171,7 @@ List<EnvironmentField> getAccessors(
         var field = setter.variable;
         setters.add(
           EnvironmentField(
-            field.name ?? '',
+            field.name!,
             setterAnn.name,
             field.type,
             setterAnn.defaultValue,

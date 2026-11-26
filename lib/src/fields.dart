@@ -7,7 +7,9 @@ import 'package:flutter_secure_dotenv/flutter_secure_dotenv.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:source_helper/source_helper.dart';
 
-final _fieldKeyChecker = const TypeChecker.typeNamed(FieldKey);
+const _fieldKeyChecker = TypeChecker.fromUrl(
+  'package:flutter_secure_dotenv/flutter_secure_dotenv.dart#FieldKey',
+);
 
 /// Abstract class representing a field with its associated metadata.
 abstract class Field<T> {
@@ -55,7 +57,7 @@ abstract class Field<T> {
     FieldRename rename,
     String? nameOverride,
   ) {
-    final key = element.name ?? '';
+    final key = element.name!;
     String jsonKey;
 
     switch (rename) {
@@ -95,9 +97,11 @@ abstract class Field<T> {
     final identifier = type.element?.library?.identifier;
     if (identifier == null) return null;
 
-    for (final e in _element.library.firstFragment.importedLibraries) {
-      if (e.library.identifier != identifier) continue;
-      return e.name;
+    for (final import in _element.library.firstFragment.libraryImports) {
+      final importedLib = import.importedLibrary;
+      if (importedLib == null) continue;
+      if (importedLib.identifier != identifier) continue;
+      return import.prefix?.element.name;
     }
     return null;
   }
@@ -217,12 +221,7 @@ class EnumField extends Field<String> {
   String? parseValue() {
     if (value == null) return null;
 
-    final interfaceElement = (type as InterfaceType).element;
-    final allAccessors = [
-      ...interfaceElement.getters,
-      ...interfaceElement.setters,
-    ];
-    final values = allAccessors
+    final values = (type as InterfaceType).getters
         .where((e) => e.returnType.isAssignableTo(type))
         .map((e) => e.name);
     if (!values.contains(value)) {
